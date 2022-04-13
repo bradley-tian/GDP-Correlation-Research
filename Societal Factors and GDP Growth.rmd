@@ -1,0 +1,424 @@
+---
+title: "Analysis of Societal Factors with Potential Relationships to Changes in GDP Over Time"
+author: "Final Project Group 42: Ben Wu, Bradley Tian, Emily Bidle, Jack Wang, Tim Gao, Tracey Ley"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+## you can edit this code chunk to change defaults for this file (ex: show all code, only show output, don't show warning etc)
+# update defaults with the gear icon on the right
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+```{r}
+# make sure you add any packages you'll need in this file here (otherwise it won't knit)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+# read in the dataset you're using for your project here into a data frame 
+# with the same name(s) as the files. For example, if you're doing the NBA
+# project, you should have lines like:
+
+# covid=read.csv("~/PathNameForDataFolder/covid.csv") # OR
+# worldbank=read.csv("~/PathNameForDataFolder/worldbank.csv")
+
+# Make sure you replace the path names so that will work for you,
+# but make sure you name the datasets the same thing as the data files 
+# (except without .csv).  Also, when you group submits the .rmd file for
+# the project, make sure to comment out the read.csv() lines - we will
+# already have the data read in with those names, and obviously the
+# path names on our machines will be different anyway.
+
+# Keep in mind that the rmd file should knit for us with the only change being
+# to change the path name for the data. So everything should run without any 
+# other files or datasets. If you are using any other data you should input it
+# using c() or something like that. If you are wanting to use another big dataset
+# talk to Hank and if it seems like there's no other way to do it you can send the
+# dataset separately.
+```
+
+
+### Introduction
+
+---
+
+The GDP, or Gross Domestic Product, is a common benchmark utilized by media and research institutions alike for measuring the performance and outputs of a nation’s economy. A higher GDP indicates more robust and plentiful growth of a country’s economy. Due to GDP’s significance in both analyzing the past and predicting the future, this investigation attempts to identify factors that could influence or be utilized to estimate GDP changes. More specifically, we aim to answer the following question:
+
+What societal factors - both economic and non-economic - are proportionally related to changes in GDP over time?
+
+
+### Description of Data
+
+---
+
+The primary dataset utilized in this investigation contains comprehensive data on overall global development as of 2018, many of which can be used to identify factors that may contribute or relate to changes in GDP across nations worldwide. Within the dataset, some key variables stood out among the others. These factors include compulsory education, labor force size, annual population growth, age dependency, public access to electricity, measles immunization status, and life expectancy. We initially used these data to search for potential correlations between such factors and the GDP utilizing regression analysis. Subsequently, we established several hypotheses on several factors with relatively high correlations and conducted hypothesis testing to verify our hypotheses. The scope of data we employed spans between the year 2017 and 2018.
+
+Due to natural volatility and randomness of data collected from large populations, we have determined that a correlation coefficient above 0.65 would be considered a fairly strong correlation between the two variables. A coefficient between 0.65 and 0.3 would be considered moderate, while below 0.3 would be considered weak or insignificant. 
+
+Although we are looking at the effect of societal factors on GDP, insinuating GDP as the response variable traditionally on the y-axis, we settled on log of GDP as the variable along the x-axis instead to better compare and showcase the changes in exploratory variables between each independent graph.
+
+Upon initial testing, we have discovered that raw GDPs create too many outliers and incomparable values that severely compromise the accuracy of regression analysis. After conducting contextual research, we have decided to use the log of GDPs to better portray countries’ GDPs in relation to each other. This scale change allows us to compare more countries with disparate raw GDPs without losing proportional accuracy. 
+
+
+### Exploratory Data Analysis
+
+---
+
+Figure 1 by Bradley Tian
+
+```{r}
+catalog = read.csv("/Users/bradl/Desktop/world_bank_2018.csv", header = TRUE)
+catalog = group_by(catalog, continent)
+log_GDP = log(catalog$GDP)
+education = catalog$compulsory_education
+
+
+ggplot(catalog) + 
+  geom_point(aes(x = log_GDP, y = education, na.rm = TRUE, color = continent)) + 
+  ggtitle("Relationship between GDP and Compulsory Education") +
+  scale_color_manual(values = c("cornflowerblue", "goldenrod3", "chocolate2", "cyan3", "darkorchid3", "seagreen4")) + 
+  xlab("Log. GDP") + ylab("Compulsory Education (Years)") + theme_minimal() +
+  geom_smooth(aes(x = log_GDP, y = education, na.rm = TRUE), method = "lm", se = FALSE)
+
+cor.test(log_GDP, education)
+
+```
+
+To analyze the relationship between nations’ GDP and their compulsory education levels, we constructed a scatter plot with GDP on the x-axis and Compulsory Education, in Years, on the y-axis. The linear model regressing compulsory education on GDP reveals a weak positive correlation between the two variables. More precisely, the correlation coefficient is approximately 0.28. Furthermore, upon evaluating each continent separately, we found that no particular continent shows homoscedastic residuals nor a reliable correlation stronger than the 0.28 overall. Therefore, it is likely that GDP has no direct impact on levels of compulsory education of nations worldwide. 
+
+
+Figure 2 by Bradley Tian
+
+```{r}
+catalog = read.csv("/Users/bradl/Desktop/world_bank_2018.csv", header = TRUE)
+catalog = group_by(catalog, continent)
+log_GDP = log(catalog$GDP)
+log_labor = log(catalog$labor)
+
+ggplot(catalog) + 
+  geom_point(aes(x = log_GDP, y = log_labor, na.rm = TRUE, color = continent)) + 
+             ggtitle("Relationship between GDP and Labor Force") +
+  scale_color_manual(values = c("cornflowerblue", "goldenrod3", "chocolate2", "cyan3", "darkorchid3", "seagreen4")) + 
+             xlab("Log. GDP") + ylab("Log. Labor Force") + theme_minimal() +
+  geom_smooth(aes(x = log_GDP, y = log_labor, na.rm = TRUE), method = "lm", se = FALSE)
+
+cor.test(log_GDP, log_labor)
+
+```
+
+The scatter plot shown above visualizes the relationship between GDP and labor size of nations worldwide. The x-axis represents GDP,  and the y-axis represents the size of the labor force. Regressing labor size on GDP, we have calculated a correlation coefficient of 0.69, which indicates a relatively strong, positive correlation between the two variables. We have also observed that the distribution of data is relatively elliptical, albeit with few outliers towards the lower end. According to the correlation coefficient and the homoscedasticity of the scatter plot, there is a clear association between GDP and Labor Size of nations worldwide. 
+
+
+Figure 3 by Emily Bidle
+
+```{r}
+catalog= read.csv("/Users/bradl/Desktop/world_bank_2018.csv", header = TRUE)
+catalog=group_by(catalog,continent)
+log_GDP=log(catalog$GDP)
+log_pop_ann_growth=log(catalog$pop_ann_growth)
+
+ggplot(catalog)+geom_point(aes(log_GDP, log_pop_ann_growth,na.rm=TRUE,color=continent))+ggtitle("Relationship between GDP and Annual Population Growth")+xlab("Log. GDP")+ylab("Log. Annual Population Growth") + 
+  scale_color_manual(values = c("cornflowerblue", "goldenrod3", "chocolate2", "cyan3", "darkorchid3", "seagreen4")) + theme_minimal() + geom_smooth(aes(x = log_GDP, y = log_pop_ann_growth, na.rm = TRUE), method = "lm", se = FALSE)
+
+cor.test(catalog$GDP,catalog$pop_ann_growth)
+```
+
+We plotted a scatter plot with GDP on the x-axis and annual population growth on the y-axis to explore the relationship between the two variables. There appears to be a weak negative association between GDP and annual population growth with a correlation coefficient of -0.17 when all countries are compared on the same graph. However, after evaluating the continents separately, it can be noted that countries in Africa and Asia (excluding significant outliers), showcase a trend where countries with a lower GDP have a higher annual population growth rate. It can be hypothesized that high population growth in low-income countries may slow their development and contribute to a lower GDP. 
+
+
+Figure 4 by Tracey Ley
+
+```{r}
+world_bank_2018 <- read.csv("/Users/bradl/Desktop/world_bank_2018.csv")
+world_bank_2018_1 = group_by(world_bank_2018, continent)
+
+log_GDP = log(world_bank_2018_1$GDP)
+log_Age_Dependency = log(world_bank_2018_1$age_dependency)
+
+ggplot(data = world_bank_2018_1) + geom_point(aes(log_GDP, log_Age_Dependency, color=continent)) +ggtitle("Relationship between GDP and Age Dependency") + scale_fill_manual(values=c("cornflowerblue", "goldenrod3", "chocolate2","cyan3","darkorchid3", "seagreen4")) + geom_smooth(aes(x=log_GDP, y=log_Age_Dependency, use = "complete.obs"), method=lm, se=FALSE)
+ 
+cor(log_GDP, log_Age_Dependency, use = "complete.obs")
+```
+
+Mathematically, there is a weak negative correlation of -0.29 between GDP and age dependency, but, graphically, there appears to be little to no correlation. This difference could be attributed to several extreme outliers, making the association less reliable. Notably, most countries besides those from the continents of Africa and Asia seem to have stabilized at around 40 dependents per 100 working-age individuals. A reasonable balance between the two is expected in order to have a stable economy. Africa and Asia have a negative and positive slope, respectively. Changes in child birth rate as GDP increases is a possible explanatory hypothesis for these variables. For example, much of Asia’s age dependency proportions are very low, and this can be attributed to their declining birth rates, however, no definitive conclusion of causality can be made.
+
+
+Figure 5 by Tim Gao
+
+```{r}
+worldbank=read.csv("/Users/bradl/Desktop/world_bank_2018.csv")
+worldbank = group_by(filter(worldbank,electricity_access<100), continent)
+log_GDP = log(worldbank$GDP)
+log_electricity_access = log(worldbank$electricity_access)
+
+ggplot(worldbank)+
+  ggtitle("Relationship between GDP and electricity access")+
+  geom_point(aes(x=log_GDP, y=log_electricity_access, color=continent))+
+  scale_color_manual(values = c("cornflowerblue", "goldenrod3", "chocolate2", "cyan3", "darkorchid3", "seagreen4")) +
+  geom_smooth(aes(x=log_GDP, y=log_electricity_access), method=lm, se=FALSE)
+
+cor.test(log_GDP,log_electricity_access)
+```
+
+This graph visualizes the correlation between a nation’s GDP and the percentage of the population that has access to electricity. The correlation coefficient was calculated to be about .453. However, it is worth noting that this is after the outliers, being the nations with 100% access to electricity, are removed. Nevertheless, even with the outliers added back in, the correlation coefficient is still almost unchanged at about 0.433. Therefore, regardless of accounting for outliers or not, there seems to be little correlation between the two factors. Even when accounting for individual continents or observing the shape that the scatter plots form, it is difficult to find signs of relation.
+
+
+Figure 6 by Ben Wu
+
+```{R}
+
+catalog = read.csv("/Users/bradl/Desktop/world_bank_2018.csv")
+catalog = group_by(catalog, continent)
+log_GDP = log(catalog$GDP)
+Measles_Immunization = catalog$measles_immunization 
+
+cleaned_df = data.frame(GDP=log_GDP, Measles_Immunization)
+cleaned_df = na.omit(cleaned_df)
+
+ggplot(catalog) + geom_point(aes(x = log_GDP, y = Measles_Immunization, color = continent),alpha=0.6, na.rm =TRUE) + scale_color_manual(values = c("cornflowerblue", "goldenrod3", "chocolate2", "cyan3", "darkorchid3", "seagreen4")) + ggtitle("Relationship between Log_GDP and Measles_Immunization Globally") + xlab("Log. GDP") +  ylab("Measles_Immunization(%)") + theme_minimal() + geom_smooth(aes(x=log_GDP, y=Measles_Immunization), method=lm, se=FALSE)
+
+```
+
+To better understand the correlation between a country’s GDP and its citizens’ wellbeing, the Measles_Immunization percentage is taken into consideration. By its name, Measles_Immunization would reflect a country’s level of Medicare, people’s acceptance to vaccination, and their education level, etc. However, as shown by the graph above, the correlation between Measles_Immunization and Log.GDP is rather weak, with a positive correlation coefficient being 0.3697, less than the standard of 0.5. This may probably be because of the difference between irregular emphasis development on economic growth, rather than those education, medical services that are more closely related to citizens’ wellbeing. Given such a scenario and the sparsely spread out scatterplot, it pushes us to closely look at the correlation condition for Europe, a continent that is generally well-developed. 
+
+
+Figure 7 by Ben Wu
+
+```{r}
+
+filtered_catalog = filter(catalog, continent == "Europe")
+
+log_GDP_filtered = log(filtered_catalog$GDP)
+
+filtered_df = data.frame(GDP_filtered=log_GDP_filtered, MM = filtered_catalog$measles_immunization)
+filtered_df = na.omit(filtered_df)
+
+ggplot(filtered_catalog)+geom_point(aes(log_GDP_filtered, filtered_catalog$measles_immunization, color=continent), fill="blue",binwidth = 3) + scale_color_manual(values = c("cornflowerblue", "goldenrod3", "chocolate2", "cyan3", "darkorchid3", "seagreen4")) + ggtitle("Relationship between Log_GDP and Measles_Immunization in Europe") + xlab("Log. GDP") + ylab("Measles_Immunization(%)") + theme_minimal() + geom_smooth(aes(x=log_GDP_filtered, y=filtered_catalog$measles_immunization), method=lm, se=FALSE)
+
+```
+
+As shown from the scatter plot and its linear regression above, its correlation coefficient is even weaker than GDP versus Measles_Immunization rate globally, being only 0.1715. This GDP versus Measles_Immunization percentage in Europe, plus 0.3697 correlation glocally, alludes to the fact that there is no direct correlation between countries’ Log.GDP and their citizens’ measles immunization percentage. There are too many confounding variables, like the accessibility of local medical services, cultural acceptance to vaccinations, citizens’ general education level, etc. And measles immunization percentage is not closely correlated with GDP. 
+
+
+Figure 8 by Jack Wang
+
+```{r}
+bank = read.csv("/Users/bradl/Desktop/world_bank_2018.csv")
+banknew = na.omit(bank)
+log_GDP = log(banknew$GDP)
+ggplot(banknew)+geom_point(aes(log_GDP, life_expectancy_total, color=continent), fill="blue",binwidth = 3) +ggtitle("Relationship Between log(GDP) and Total Life Expectancy") + scale_color_manual(values = c("cornflowerblue", "goldenrod3", "chocolate2", "cyan3", "darkorchid3", "seagreen4")) + geom_smooth(aes(x=log(GDP), y=life_expectancy_total), method=lm, se=FALSE)
+
+cor.test(log_GDP,banknew$life_expectancy_total)
+```
+
+To understand the relationship between the GDP of a country and its total life expectancy, a scatter plot was constructed by using the World Bank data relating the logarithm of GDP to the total life expectancy, and a regression line was also plotted on the graph. The correlation coefficient is r=0.411 which indicates that there is a weak correlation overall when all countries are plotted in the graph. Since there is no strong correlation, another hypothesis is that different continents might have different environments which is affecting the total life expectancy, and by eliminating the effects of continents the correlation might be different. For all intents and purposes, further research is required to identify meaningful relationships.
+
+
+### Data Analysis
+
+
+---
+
+
+Section 1: GDP & Labor Participation Rates by Bradley Tian
+
+
+As shown in Figure 2, there exists a relatively strong correlation between a nation’s GDP and the size of its labor force. It was thus hypothesized that, on average, higher GDPs are related to better labor force engagement. To test the validity of this conjecture and examine further relationships between GDP and labor force, we collected additional data from DataBank, the World Bank’s central database, on GDP and labor participation rates (labor force size / total population) of nations worldwide for the year 2017. Utilizing the given dataset, we calculated labor participation rates for the year 2018 via the same methodology. 
+
+```{r}
+
+catalog = read.csv("/Users/bradl/Desktop/world_bank_2018.csv", header = TRUE)
+log_GDP = log(catalog$GDP)
+labor_pr = read.csv("/Users/bradl/Desktop/labor_pr.csv", header = TRUE)
+gdp_catalog = read.csv("/Users/bradl/Desktop/gdp.csv", header = TRUE)
+pr_2017 = as.double(labor_pr$X2017..YR2017.)
+gdp_2017 = as.double(gdp_catalog$X2017)
+pr_2018 = (catalog$labor / catalog$pop_total) * 100
+```
+
+Average Labor Participation Rate for 2017:
+```{r}
+mean(pr_2017, na.rm = TRUE)
+```
+
+Average Labor Participation Rate for 2018:
+```{r}
+mean(pr_2018, na.rm = TRUE)
+```
+
+To effectively gauge the relationship between labor participation rates and GDP, we consolidated the two groups of data into labor-GDP ratios, which are calculated by dividing labor participation ratios with logged GDP. 
+
+```{r}
+ratios_2017 = pr_2017 / log(gdp_2017)
+ratios_2018 = pr_2018 / log_GDP
+```
+
+Average Labor-GDP Ratio for 2017:
+```{r}
+mean(ratios_2017, na.rm = TRUE)
+```
+
+Average Labor-GDP Ratio for 2018:
+```{r}
+mean(ratios_2018, na.rm = TRUE)
+```
+
+In context of our predictions, we hereby established a null hypothesis stating that changes in labor participation rate are directly in proportion with changes in GDP; that is, any difference in labor-GDP ratios across different years is simply due to chance. 
+
+R2018 = R2017
+
+In contrast, we established an alternative hypothesis stating that changes in labor participation rates are not directly related to changes in GDP; that is, differences between labor-GDP ratios across different years are real and incites the need for further research. 
+
+R2018 != R2017
+
+With two ratio samples from 2017 and 2018, we conducted a two-sample hypothesis test comparing the difference between averages of ratios of the two years. As we seek to identify differences - both positive and negative - between the two averages, we designed this test to be two-tailed. 
+
+We began by calculating the respective standard error for each sample. Since the population standard deviation is unknown, we bootstrapped the population SD with standard deviations of the samples. 
+
+```{r}
+SE1 = (sd(ratios_2017, na.rm = TRUE) * sqrt((length(ratios_2017)-1)/(length(ratios_2017))))/(sqrt((length(ratios_2017))))
+SE2 = (sd(ratios_2018, na.rm = TRUE) * sqrt((length(ratios_2018)-1)/(length(ratios_2018))))/(sqrt((length(ratios_2018))))
+```
+
+Standard Error of the 2017 Sample: 
+```{r}
+SE1
+```
+
+Standard Error of the 2018 Sample:
+
+```{r}
+SE2
+```
+
+With the two sample standard errors, we then calculated the standard error of the difference:
+```{r}
+SE_Diff = sqrt(SE1**2 + SE2**2)
+SE_Diff
+```
+
+We then calculated the z-score as such: 
+
+(observed difference between averages of 2017 and 2018 ratios – expected difference, which is 0) / (standard error of difference)
+
+Resulting in the value below:
+
+```{r}
+z = ((mean(ratios_2018, na.rm = TRUE) - mean(ratios_2017, na.rm = TRUE)) - 0)/SE_Diff
+z
+```
+
+The P-Value is then calculated as pnorm(-z) + 1-pnorm(z):
+
+```{r}
+p_value = pnorm(z) + (1 - pnorm(-z))
+p_value
+```
+
+As shown above, the p-value is extremely small, strongly suggesting that the null hypothesis should be rejected. Therefore, we conclude that labor participation rates and GDP are not directly related, and that additional variables related to the labor force, such as employment rates and supply chain statuses, should be investigated to better identify factors related to changes in GDP of nations worldwide. 
+
+
+Section 2: GDP & Measle Immunization Rates by Tracey Ley
+
+
+Essentially, we strove to test the change in the measles immunization rate in children aged 12-23 months between 2 years. Vaccination contributes to healthy individuals and a healthy population contributes to economic growth. From the world bank’s database resource online, we were able to secure the relevant immunization rates each year as well as the GDP in US dollars to compare with our data in the 2018 dataset. For each world bank dataset, we narrowed the results to only produce the column corresponding to 2017, then found the ratios (calculated via the same methodology in section 1) between immunization and log of GDP to set up our 2 sample hypothesis testing comparing the immunization rate changes conditional on GDP. 
+
+```{r}
+measles <- read.csv("/Users/bradl/Desktop/measles.csv", header=TRUE)
+measles_new = measles[-c(1, 2, 3, 4),] 
+gdp <- read.csv("/Users/bradl/Desktop/gdp.csv", header=TRUE)
+measles_2017 = as.double(measles_new$X.59, na.rm=TRUE)
+gdp_2017 = as.double(gdp$X2017)
+measles_2018 = (world_bank_2018_1$labor / world_bank_2018_1$pop_total) * 100
+ratios_2017 = measles_2017 / log(gdp_2017)
+ratios_2018 = measles_2018 / log_GDP
+```
+
+Average Immunization-GDP Ratio for 2017:
+```{r}
+mean(ratios_2017, na.rm = TRUE)
+```
+
+Average Immunization-GDP Ratio for 2018:
+```{r}
+mean(ratios_2018, na.rm = TRUE)
+```
+
+The null hypothesis becomes that there is no difference between the ratios of measles immunization and gdp from each year and that any observed difference is simply due to chance. Conversely, the alternative hypothesis states that the observed difference between ratios is real.
+
+We then calculated the SE of both ratios by first calculating individually then pooling the samples by square rooting the sum of each standard error squared. From the difference between the average ratios divided by the SE, we could find both the z score and p value.
+
+```{r}
+
+SE1 = (sd(ratios_2017, na.rm = TRUE) * sqrt((length(ratios_2017)-1)/(length(ratios_2017))))/(sqrt((length(ratios_2017))))
+SE2 = (sd(ratios_2018, na.rm = TRUE) * sqrt((length(ratios_2018)-1)/(length(ratios_2018))))/(sqrt((length(ratios_2018))))
+
+SE_Diff = sqrt(SE1^2 + SE2^2)
+
+z = ((mean(ratios_2018, na.rm = TRUE) - mean(ratios_2017, na.rm = TRUE)) - 0)/SE_Diff
+
+p_value = pnorm(z) + (1 - pnorm(-z))
+
+```
+
+Standard Error of 2017 Sample:
+```{r}
+SE1
+```
+
+Standard Error of 2018 Sample:
+```{r}
+SE2
+```
+
+Standard Error of Differences:
+```{r}
+SE_Diff
+```
+
+Z-Score:
+```{r}
+z
+```
+
+P-Value:
+```{r}
+p_value
+```
+
+Since the p-value is approximately 0, which is extremely small and less than our stated alpha of 0.05, we reject our null hypothesis. Therefore, a significant difference beyond chance exists in the progression of immunization rates and GDP, suggesting that although changes in measles immunization rates may be moderately correlated to changes in GDP, we cannot declare immunization rates as an influencing/related factor for GDP change across nations worldwide. 
+
+
+### Conclusion
+
+
+---
+
+
+Firstly, our exploration of the world bank dataset and variables of interest, in conjunction with GDP, suggested measles immunization and labor participation rates as variables to further investigate through hypothesis testing. In both of our 2-sample hypothesis tests, we created ratios of the respective variable over GDP between the year 2017 and 2018 in order to see whether observed differences are significant or due to mere chance. After sampling, we discovered that the p-values were extremely small, leading us to reject our null hypotheses. Since we are comparing the difference of ratios between GDP and labor participation rates as well as GDP and measles immunization rate. By rejecting the null hypothesis, we understood that the ratios are inconsistent, which suggests that it is highly unlikely for either of the variables to be directly related to GDP over time. Further research on other lurking variables, such as education and population growth rates, is needed to better identify likely factors that contribute to or indirectly influence GDP growth.
+
+Due to the wild variability in the data resulting from such a large population sample, it was difficult to interpret much of our results with many of our exploratory variables having little to no correlation with GDP. Additionally, the variables of interest were not related to each other, further complicating the difficulty for any solid conclusions. If we were to conduct the tests again, we could subdivide the dataset differently, possibly by looking at variables only within a single continent or by looking at variables from one country over time and their relation/correlation with each other. Expansion upon such analysis would yield more accurate results that help us better understand the composition of GDP and its interrelationships with other components of societies across the world. 
+
+
+\newpage
+### References
+
+
+---
+
+
+“GDP (Current US$).” DataBank, The World Bank, 2021, https://data.worldbank.org/indicator/NY.GDP.MKTP.CD.
+
+“Immunization, Measles (% of Children Ages 12-23 Months).” DataBank, The World Bank, 2021, https://data.worldbank.org/indicator/SH.IMM.MEAS?end=2018&start=2008.
+
+“Labor Force Participation Rate, Total (% of Total Population Ages 15-64) (Modeled ILO Estimate).” DataBank, The World Bank, 2021, https://data.worldbank.org/indicator/SL.TLF.ACTI.ZS. 
